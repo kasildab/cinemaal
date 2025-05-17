@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cinema AL</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="icon" href="https://www.pngarts.com/files/2/Play-PNG-Image-Background.png" />
+    <link rel="stylesheet" href="styles/styles.css">
+    </head>
+    <div class="relative h-screen w-full bg-cover bg-center hero-background">
+        <body class="bg-black text-white">
+            <div class="relative h-screen w-full bg-cover bg-center" style="background-image: url('https://miro.medium.com/v2/resize:fit:1100/format:webp/1*HXbsbmvUf6-6Cv0_aSmaRQ.jpeg');">
+                <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+                <div class="overlay absolute inset-0 flex flex-col justify-between">
+                    <header class="flex justify-between items-center px-8 py-6">
+                        <h1 class="text-3xl font-extrabold text-red-600">Cinema <span class="text-white">AL</span></h1>
+                        <div>
+                            <a href="login.html" class="text-white font-semibold px-4 py-2 border border-white rounded hover:bg-white hover:text-black transition">Sign In</a>
+                        </div>
+                    </header>
+                    <div class="text-center px-4 md:px-0 max-w-2xl mx-auto my-auto">
+                        <h2 class="text-4xl md:text-5xl font-extrabold leading-tight mb-6">Unlimited movies, <br> TV shows, and more</h2>
+                        <p class="text-sm mb-6">Join thousands of users who enjoy the best Albanian and international content.</p>
+                        <a href="signup.html" class="bg-teal-400 text-black px-8 py-3 font-bold text-lg rounded hover:bg-teal-300 transition">Create an Account NOW!</a>
+                    </div>
+                    <div class="text-center pb-8 text-gray-400 text-sm">
+                        &copy; 2025 Cinema AL. All rights reserved.
+                    </div>
+                </div>
+            </div>
+            <section class="trending-container py-8">
+                <h2 class="text-white text-2xl font-bold mb-4 px-4 md:px-8">Trending Now</h2>
+                <div class="relative">
+                    <button class="scroll-button scroll-left hidden md:block" onclick="scrollTrending(-1)" title="Scroll Left">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M15 18l-6-6 6-6"/>
+                        </svg>
+                    </button>
+                    <div class="trending-row" id="trendingRow">
+                        <div class="trending-card">
+                            <div class="relative">
+                                <img src="https://m.media-amazon.com/images/M/MV5BMTVlYmRhMWQtNmE0Yi00ODM1LWEzMWEtNTQzZGZhODRmZTE0XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg" alt="YOU" class="w-full">
+                                <span class="rank-badge">1</span>
+                            </div>
+                        </div>
+                        <div class="trending-card">
+                            <div class="relative">
+                                <img src="https://resizing.flixster.com/4f07jbUMF4LpnOMfnMGezAVoxUI=/fit-in/180x240/v2/https://resizing.flixster.com/rctSY7MyjKGX3-GrPPUQTBvAB2o=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzL2Y2MDRiOGUzLTBlMmEtNGMyMi1iMmIwLWNhM2FjYTljMjRkOC5qcGc=" alt="Adolescence" class="w-full">
+                                <span class="rank-badge">2</span>
+                            </div>
+                        </div>
+                        <div class="trending-card">
+                            <div class="relative">
+                                <img src="https://m.media-amazon.com/images/I/81vRg6RVaFL.jpg" alt="Blood of Zeus" class="w-full">
+                                <span class="rank-badge">3</span>
+                            </div>
+                        </div>
+                        <div class="trending-card">
+                            <div class="relative">
+                                <img src="https://m.media-amazon.com/images/M/MV5BZWJjMjdhNGEtZjEyMi00OTg2LTllMzQtN2JlZWNjYzI4YzFhXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg" alt="Havoc" class="w-full">
+                                <span class="rank-badge">4</span>
+                            </div>
+                        </div>
+                        <div class="trending-card">
+                            <div class="relative">
+                                <img src="https://images.sr.roku.com/idType/roku/context/global/id/a9f69438418e595594ff3dfff3cd9f8e/images/gracenote/assets/p22135613_v_v12_aa.jpg/magic/396x0/filters:quality(70)" alt="Bad Influence" class="w-full">
+                                <span class="rank-badge">5</span>
+                            </div>
+                        </div>
+                        <div class="trending-card">
+                            <div class="relative">
+                                <img src="https://puzzlemania-154aa.kxcdn.com/products/2024/puzzle-clementoni-1000-pieces-netflix-squid-game.webp" alt="Squid Game" class="w-full">
+                                <span class="rank-badge">6</span>
+                            </div>
+                        </div>
+                        <div class="trending-card">
+                            <div class="relative">
+                                <img src="https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p15523389_b_v12_at.jpg" alt="Squid Game" class="w-full">
+                                <span class="rank-badge">7</span>
+                            </div>
+                        </div>
+                        <div class="trending-card">
+                            <div class="relative">
+                                <img src="https://upload.wikimedia.org/wikipedia/tr/2/20/%C3%96ld%C3%BCrBeniSevgilim.jpg" alt="Squid Game" class="w-full">
+                                <span class="rank-badge">8</span>
+                            </div>
+                        </div>
+                        <div class="trending-card">
+                            <div class="relative">
+                                <img src="https://images.justwatch.com/poster/307478801/s166/when-i-fly-towards-you" alt="Squid Game" class="w-full">
+                                <span class="rank-badge">9</span>
+                            </div>
+                        </div>
+                        <div class="trending-card">
+                            <div class="relative">
+                                <img src="https://m.media-amazon.com/images/M/MV5BNzkwNzYwOTE4OV5BMl5BanBnXkFtZTcwNDgxMDMzNA@@._V1_FMjpg_UX1000_.jpg" alt="Squid Game" class="w-full">
+                                <span class="rank-badge">10</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="scroll-button scroll-right hidden md:block" onclick="scrollTrending(1)" title="Scroll Right">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 18l6-6-6-6"/>
+                        </svg>
+                    </button>
+                </div>
+            </section>
+            <script src="js/script.js"></script>
+        </body>
+        </html>

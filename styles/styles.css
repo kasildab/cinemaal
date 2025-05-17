@@ -39,7 +39,10 @@
     overflow-x: auto;
     scroll-behavior: smooth;
     -ms-overflow-style: none;
-    scrollbar-width: none;
+        scrollbar-width: none; /* For Firefox */
+    }
+    .trending-row::-webkit-scrollbar {
+        display: none; /* For Chrome, Safari, and other WebKit-based browsers */
     -webkit-scrollbar {
         display: none;
     }
@@ -101,10 +104,56 @@
     .trending-card {
         width: 33.33%;
     }
+    .scroll-button {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.5);
+      color: white;
+      border: none;
+      width: 33.33%;
+      height: 60px;
+      z-index: 10;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+  }
+  .scroll-left {
+      left: 0;
+      border-radius: 0 4px 4px 0;
+  }
+  .scroll-right {
+      right: 0;
+      border-radius: 4px 0 0 4px;
+  }
 }
 @media (max-width: 480px) {
     .trending-card {
         width: 50%;
+    }
+    .scroll-button {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.5);
+      color: white;
+      border: none;
+      width: 50%;
+      height: 60px;
+      z-index: 10;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .scroll-left {
+        left: 0;
+        border-radius: 0 4px 4px 0;
+    }
+    .scroll-right {
+        right: 0;
+        border-radius: 4px 0 0 4px;
     }
 }
 

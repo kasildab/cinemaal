@@ -39,13 +39,6 @@
     overflow-x: auto;
     scroll-behavior: smooth;
     -ms-overflow-style: none;
-        scrollbar-width: none; /* For Firefox */
-    }
-    .trending-row::-webkit-scrollbar {
-        display: none; /* For Chrome, Safari, and other WebKit-based browsers */
-    -webkit-scrollbar {
-        display: none;
-    }
     overflow: hidden;
     -ms-overflow-style: none;
     padding-bottom: 20px;

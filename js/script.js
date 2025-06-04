@@ -1,20 +1,40 @@
 function scrollTrending(direction) {
-    const row = document.getElementById('trendingRow');
-    const scrollAmount = row.clientWidth * 0.8 * direction;
-    row.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-}
-document.addEventListener('DOMContentLoaded', () => {
-    const trendingRow = document.getElementById('trending-row');
-    const leftButton = document.getElementById('left-button');
-    const rightButton = document.getElementById('right-button');
+  const row = document.getElementById('trendingRow');
+  const scrollAmount = 300; // Adjust this value as needed
   
-    if (trendingRow && leftButton && rightButton) {
-      trendingRow.addEventListener('scroll', () => {
-        leftButton.style.display = trendingRow.scrollLeft > 0 ? 'flex' : 'none';
-        rightButton.style.display = trendingRow.scrollLeft < (trendingRow.scrollWidth - trendingRow.clientWidth) ? 'flex' : 'none';
-      });
-    }
-  });
+  if (direction === -1) {
+      row.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+  } else {
+      row.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+  }
+}
+
+// Optional: Add touch event listeners for better mobile experience
+document.addEventListener('DOMContentLoaded', function() {
+  const trendingRow = document.getElementById('trendingRow');
+  let touchStartX = 0;
+  let touchEndX = 0;
+  
+  trendingRow.addEventListener('touchstart', function(e) {
+      touchStartX = e.changedTouches[0].screenX;
+  }, false);
+  
+  trendingRow.addEventListener('touchend', function(e) {
+      touchEndX = e.changedTouches[0].screenX;
+      handleSwipe();
+  }, false);
+  
+  function handleSwipe() {
+      if (touchEndX < touchStartX) {
+          // Swiped left
+          trendingRow.scrollBy({ left: 200, behavior: 'smooth' });
+      }
+      if (touchEndX > touchStartX) {
+          // Swiped right
+          trendingRow.scrollBy({ left: -200, behavior: 'smooth' });
+      }
+  }
+});
   
 // Mobile menu toggle
 const mobileMenuToggle = document.getElementById('mobile-menu-toggle');

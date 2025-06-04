@@ -1,177 +1,171 @@
+/* Search styles (unchanged) */
 .search-container {
-    position: relative;
-    display: flex;
-    align-items: center;
-  }
-  .search-bar {
-    transition: width 0.3s ease-in-out;
-    width: 40px;
-    height: 40px;
-    padding: 0 15px;
-    border: none;
-    border-radius: 20px;
-    background: #2b2b2f;
-    color: white;
-    outline: none;
-  }
-  .search-bar:focus {
-    width: 250px;
-    padding-left: 40px;
-    padding-right: 15px;
-  }
-  .search-icon {
-    position: absolute;
-    left: 15px;
-    pointer-events: none;
-    color: white;
-  }
-  .search-bar:focus + .search-icon {
-    left: 15px;
-  }
-  
-  .trending-container {
-    position: relative;
-    padding-left: 10%;
-    padding-right: 10%;
+  position: relative;
+  display: flex;
+  align-items: center;
 }
+.search-bar {
+  transition: width 0.3s ease-in-out;
+  width: 40px;
+  height: 40px;
+  padding: 0 15px;
+  border: none;
+  border-radius: 20px;
+  background: #2b2b2f;
+  color: white;
+  outline: none;
+}
+.search-bar:focus {
+  width: 250px;
+  padding-left: 40px;
+  padding-right: 15px;
+}
+.search-icon {
+  position: absolute;
+  left: 15px;
+  pointer-events: none;
+  color: white;
+}
+.search-bar:focus + .search-icon {
+  left: 15px;
+}
+
+/* Trending section styles */
+.trending-container {
+  position: relative;
+  padding: 20px 16px; /* Adjusted padding for mobile */
+  background-color: #000;
+}
+
 .trending-row {
-    display: flex;
-    overflow-x: auto;
-    scroll-behavior: smooth;
-    -ms-overflow-style: none;
-    overflow: hidden;
-    -ms-overflow-style: none;
-    padding-bottom: 20px;
+  display: flex;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch; /* Important for iOS smooth scrolling */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+  padding-bottom: 20px;
+  gap: 12px; /* Added gap between cards */
 }
+
 .trending-row::-webkit-scrollbar {
-    display: none;
+  display: none; /* Chrome/Safari */
 }
+
 .trending-card {
-    flex: 0 0 auto;
-    width: 18%;
-    padding: 0 20px;
-    transition: transform 0.3s ease;
+  flex: 0 0 auto;
+  width: 150px; /* Fixed width for mobile */
+  transition: transform 0.3s ease;
 }
+
 .trending-card:hover {
-    transform: scale(1.05);
+  transform: scale(1.05);
 }
+
 .trending-card img {
-    width: 100%;
-    border-radius: 8px;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  aspect-ratio: 2/3; /* Maintain aspect ratio */
 }
+
 .rank-badge {
-    position: absolute;
-    left: 5px;
-    bottom: 30px;
-    background: rgba(0,0,0,0.7);
-    color: white;
-    font-size: 30px;
-    font-weight: bold;
-    padding: 2px 10px;
-    border-radius: 4px;
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  background: rgba(0,0,0,0.7);
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 2px 8px;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
+
 .scroll-button {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(0,0,0,0.5);
-    color: white;
-    border: none;
-    width: 40px;
-    height: 60px;
-    z-index: 10;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.5);
+  color: white;
+  border: none;
+  width: 40px;
+  height: 60px;
+  z-index: 10;
+  cursor: pointer;
+  display: none; /* Hidden by default */
+  align-items: center;
+  justify-content: center;
+  opacity: 0.8;
 }
+
+.scroll-button:hover {
+  opacity: 1;
+}
+
 .scroll-left {
-    left: 0;
-    border-radius: 0 4px 4px 0;
+  left: 0;
+  border-radius: 0 4px 4px 0;
 }
+
 .scroll-right {
-    right: 0;
-    border-radius: 4px 0 0 4px;
-}
-@media (max-width: 768px) {
-    .trending-card {
-        width: 33.33%;
-    }
-    .scroll-button {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      background: rgba(0,0,0,0.5);
-      color: white;
-      border: none;
-      width: 33.33%;
-      height: 60px;
-      z-index: 10;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-  }
-  .scroll-left {
-      left: 0;
-      border-radius: 0 4px 4px 0;
-  }
-  .scroll-right {
-      right: 0;
-      border-radius: 4px 0 0 4px;
-  }
-}
-@media (max-width: 480px) {
-    .trending-card {
-        width: 50%;
-    }
-    .scroll-button {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      background: rgba(0,0,0,0.5);
-      color: white;
-      border: none;
-      width: 50%;
-      height: 60px;
-      z-index: 10;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .scroll-left {
-        left: 0;
-        border-radius: 0 4px 4px 0;
-    }
-    .scroll-right {
-        right: 0;
-        border-radius: 4px 0 0 4px;
-    }
+  right: 0;
+  border-radius: 4px 0 0 4px;
 }
 
-body {
-    font-family: 'Montserrat', sans-serif;
-}
-.overlay {
-    background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.3));
-}
-
-  .dropdown-menu {
-    display: none;
-    position: absolute;
-    right: 0;
-    margin-top: 0.5rem;
-    width: 192px;
-    background-color: white;
-    border-radius: 0.375rem;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  }
-  .dropdown-menu.show {
-    display: block;
-  }
-  .dropdown-menu div:first-child {
-    border-bottom: 1px solid #000000;
-    margin-bottom: 8px;
+/* Media Queries */
+@media (min-width: 768px) {
+  .trending-container {
+      padding-left: 10%;
+      padding-right: 10%;
   }
   
+  .trending-card {
+      width: 200px; /* Larger cards on desktop */
+  }
+  
+  .scroll-button {
+      display: flex; /* Show buttons on desktop */
+  }
+  
+  .rank-badge {
+      font-size: 16px;
+      width: 28px;
+      height: 28px;
+  }
+}
+
+/* General styles */
+body {
+  font-family: 'Montserrat', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.overlay {
+  background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.3));
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  right: 0;
+  margin-top: 0.5rem;
+  width: 192px;
+  background-color: white;
+  border-radius: 0.375rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.dropdown-menu.show {
+  display: block;
+}
+
+.dropdown-menu div:first-child {
+  border-bottom: 1px solid #000000;
+  margin-bottom: 8px;
+}

@@ -9,31 +9,53 @@ function scrollTrending(direction) {
   }
 }
 
-// Optional: Add touch event listeners for better mobile experience
+// Add this to your existing script.js
 document.addEventListener('DOMContentLoaded', function() {
   const trendingRow = document.getElementById('trendingRow');
-  let touchStartX = 0;
-  let touchEndX = 0;
-  
-  trendingRow.addEventListener('touchstart', function(e) {
-      touchStartX = e.changedTouches[0].screenX;
-  }, false);
-  
-  trendingRow.addEventListener('touchend', function(e) {
-      touchEndX = e.changedTouches[0].screenX;
-      handleSwipe();
-  }, false);
-  
-  function handleSwipe() {
-      if (touchEndX < touchStartX) {
-          // Swiped left
-          trendingRow.scrollBy({ left: 200, behavior: 'smooth' });
-      }
-      if (touchEndX > touchStartX) {
-          // Swiped right
-          trendingRow.scrollBy({ left: -200, behavior: 'smooth' });
-      }
-  }
+  let isDown = false;
+  let startX;
+  let scrollLeft;
+
+  trendingRow.addEventListener('mousedown', (e) => {
+      isDown = true;
+      startX = e.pageX - trendingRow.offsetLeft;
+      scrollLeft = trendingRow.scrollLeft;
+  });
+
+  trendingRow.addEventListener('mouseleave', () => {
+      isDown = false;
+  });
+
+  trendingRow.addEventListener('mouseup', () => {
+      isDown = false;
+  });
+
+  trendingRow.addEventListener('mousemove', (e) => {
+      if(!isDown) return;
+      e.preventDefault();
+      const x = e.pageX - trendingRow.offsetLeft;
+      const walk = (x - startX) * 2; // Adjust multiplier for sensitivity
+      trendingRow.scrollLeft = scrollLeft - walk;
+  });
+
+  // Touch events for mobile
+  trendingRow.addEventListener('touchstart', (e) => {
+      isDown = true;
+      startX = e.touches[0].pageX - trendingRow.offsetLeft;
+      scrollLeft = trendingRow.scrollLeft;
+  });
+
+  trendingRow.addEventListener('touchend', () => {
+      isDown = false;
+  });
+
+  trendingRow.addEventListener('touchmove', (e) => {
+      if(!isDown) return;
+      e.preventDefault();
+      const x = e.touches[0].pageX - trendingRow.offsetLeft;
+      const walk = (x - startX) * 2;
+      trendingRow.scrollLeft = scrollLeft - walk;
+  });
 });
   
 // Mobile menu toggle

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Edit Profile | Cinema AL</title>
+  <link rel="icon" href="https://images.icon-icons.com/3250/PNG/512/person_edit_filled_icon_201283.png" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="styles/styles.css">
+  <link rel="stylesheet" href="styles/styles2.css">
+</head>
+
+<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center">
+  
+  <div class="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-bold">Edit Your Profile</h2>
+      <a href="home2.html" class="text-teal-400 hover:text-teal-300 flex items-center gap-1">
+        <i class="fas fa-arrow-left"></i> Back
+      </a>
+    </div>
+    
+    <form id="editForm" class="space-y-4">
+      <div>
+        <label for="username" class="block text-sm font-medium">Username</label>
+        <input type="text" id="username" required placeholder="Your username"
+        class="w-full px-4 py-2 rounded bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-teal-400">
+      </div>
+      <div>
+        <label for="imageURL" class="block text-sm font-medium">Profile Image URL</label>
+        <input type="url" id="imageURL" required placeholder="https://..."
+        class="w-full px-4 py-2 rounded bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-teal-400">
+      </div>
+      <button type="submit"
+      class="w-full bg-teal-400 hover:bg-teal-500 text-black font-semibold py-2 rounded transition">
+      Save Changes
+    </button>
+  </form>
+  
+  <button id="deleteAccountBtn"
+  class="mt-6 w-full bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md transition">
+  Delete Account
+</button>
+
+<!-- Delete Confirmation Modal -->
+<div id="confirmDeleteModal"
+class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+<div class="bg-gray-800 p-8 rounded-lg w-full max-w-md text-center">
+  <h2 class="text-2xl font-bold mb-4">Confirm Account Deletion</h2>
+  <p class="text-gray-300 mb-6">Are you sure you want to delete your account? This cannot be undone.</p>
+  
+  <div class="flex space-x-4 justify-center">
+    <button id="confirmDeleteBtn"
+    class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md">Confirm Delete</button>
+    <button id="cancelDeleteBtn"
+    class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md">Cancel</button>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- Firebase & Logic -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+  import {
+    getAuth,
+    onAuthStateChanged,
+    deleteUser
+  } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+  import {
+    getFirestore,
+    doc,
+    getDoc,
+    setDoc,
+    deleteDoc
+  } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+  
+  const firebaseConfig = {
+    apiKey: "AIzaSyCjZv1YDGIb3DCXWQO231OfPMJTNKrjzKo",
+    authDomain: "cinema-al.firebaseapp.com",
+    projectId: "cinema-al",
+    storageBucket: "cinema-al.appspot.com",
+    messagingSenderId: "1032816680533",
+    appId: "1:1032816680533:web:8276b33e95570691d93edc",
+  };
+  
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  
+  const form = document.getElementById("editForm");
+  const deleteBtn = document.getElementById("deleteAccountBtn");
+  const modal = document.getElementById("confirmDeleteModal");
+  const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+  const cancelDeleteBtn = document.getElementById("cancelDeleteBtn");
+  
+  let currentUser = null;
+  
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      currentUser = user;
+      const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+      if (userDoc.exists()) {
+        const data = userDoc.data();
+        document.getElementById("imageURL").value = data.profileImage || "";
+        document.getElementById("username").value = data.username || "";
+      }
+    }
+  });
+  
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const imageURL = document.getElementById("imageURL").value.trim();
+    const username = document.getElementById("username").value.trim();
+    if (!currentUser) return;
+    try {
+      await setDoc(doc(db, "users", currentUser.uid), {
+        profileImage: imageURL,
+        username: username,
+        email: currentUser.email,
+        updatedAt: new Date()
+      });
+      alert("Profile updated!");
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      alert("Failed to update profile.");
+    }
+  });
+  
+  deleteBtn.addEventListener("click", () => {
+    modal.classList.remove("hidden");
+  });
+  
+  cancelDeleteBtn.addEventListener("click", () => {
+    modal.classList.add("hidden");
+  });
+  
+  confirmDeleteBtn.addEventListener("click", async () => {
+    if (!currentUser) {
+      alert("No user logged in.");
+      return;
+    }
+    
+    try {
+      const docRef = doc(db, "users", currentUser.uid);
+      const docSnap = await getDoc(docRef);
+      
+      if (docSnap.exists()) {
+        await deleteDoc(docRef); // delete profile
+        await deleteUser(currentUser); // delete account
+        alert("Account and profile deleted.");
+        window.location.href = "signup.html";
+      } else {
+        alert("No profile found for this user.");
+      }
+    } catch (error) {
+      console.error("Deletion error:", error);
+      alert("Something went wrong while deleting your account.");
+    }
+  });
+</script>
+
+<!-- Font Awesome for the back arrow icon -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</body>
+</html>

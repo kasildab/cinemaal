@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Keep all your head content the same -->
+    <title>Watch Movie | Cinema AL</title>
+</head>
+<body class="bg-gray-900 text-white">
+    <!-- Navigation remains the same -->
+    
+    <main class="container mx-auto px-4 py-6 max-w-7xl">
+        <!-- Video Player Section -->
+        <section class="mb-8">
+            <div class="player-container w-full bg-black rounded-lg overflow-hidden relative">
+                <!-- Video Player will be populated dynamically -->
+                <video id="moviePlayer" class="w-full h-full">
+                    Your browser does not support the video tag.
+                </video>
+                
+                <!-- Controls remain the same -->
+            </div>
+        </section>
+
+        <!-- Movie Info Section - elements will be populated dynamically -->
+        <section class="mb-8">
+            <div class="flex flex-col md:flex-row gap-6">
+                <div class="flex-shrink-0">
+                    <img id="moviePoster" src="" alt="Movie Poster" class="w-64 rounded-lg shadow-lg">
+                </div>
+                <div class="flex-grow">
+                    <h1 id="movieTitle" class="text-3xl font-bold mb-2"></h1>
+                    <div id="movieMeta" class="flex items-center flex-wrap gap-3 mb-4">
+                        <!-- Will be populated dynamically -->
+                    </div>
+                    
+                    <!-- Action buttons remain the same -->
+                    
+                    <div class="mb-4">
+                        <h2 class="text-xl font-semibold mb-2">Overview</h2>
+                        <p id="movieDescription" class="text-gray-300"></p>
+                    </div>
+                    
+                    <div id="movieDetails" class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <!-- Will be populated dynamically -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recommendations Section will be populated dynamically -->
+        <section>
+            <h2 class="text-2xl font-bold mb-6">More Like This</h2>
+            <div id="recommendations" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <!-- Will be populated dynamically -->
+            </div>
+        </section>
+    </main>
+
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove, collection, query, where, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyCjZv1YDGIb3DCXWQO231OfPMJTNKrjzKo",
+            authDomain: "cinema-al.firebaseapp.com",
+            projectId: "cinema-al",
+            storageBucket: "cinema-al.appspot.com",
+            messagingSenderId: "1032816680533",
+            appId: "1:1032816680533:web:8276b33e95570691d93edc"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        // Get movie ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const movieId = urlParams.get('id');
+        
+        if (!movieId) {
+            window.location.href = "home2.html";
+        }
+        
+        // DOM Elements
+        const player = document.getElementById('moviePlayer');
+        const moviePoster = document.getElementById('moviePoster');
+        const movieTitle = document.getElementById('movieTitle');
+        const movieMeta = document.getElementById('movieMeta');
+        const movieDescription = document.getElementById('movieDescription');
+        const movieDetails = document.getElementById('movieDetails');
+        const recommendations = document.getElementById('recommendations');
+        
+        // Player control elements remain the same as your original code
+        
+        let currentUser = null;
+        
+        // Initialize the page
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                await loadMovieData();
+                await checkUserInteraction();
+                await loadRecommendations();
+                initializePlayerControls(); // Your existing player control setup
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+        
+        // Load movie data from Firestore
+        async function loadMovieData() {
+            try {
+                const movieDoc = await getDoc(doc(db, "movies", movieId));
+                if (movieDoc.exists()) {
+                    const movieData = movieDoc.data();
+                    
+                    // Update page title
+                    document.title = `Watch ${movieData.title} | Cinema AL`;
+                    
+                    // Update movie info
+                    movieTitle.textContent = movieData.title;
+                    moviePoster.src = movieData.poster;
+                    moviePoster.alt = `${movieData.title} Poster`;
+                    player.poster = movieData.thumbnail;
+                    
+                    // Update metadata
+                    movieMeta.innerHTML = `
+                        ${movieData.hd ? '<span class="bg-teal-400/20 text-teal-400 px-2 py-1 rounded text-xs">HD</span>' : ''}
+                        <span class="text-gray-300">${movieData.year}</span>
+                        <span class="text-gray-300">${movieData.duration}</span>
+                        <span class="text-gray-300">${movieData.rating}</span>
+                        <div class="flex items-center">
+                            <i class="fas fa-star text-yellow-400 mr-1"></i>
+                            <span>${movieData.ratingValue}/10</span>
+                        </div>
+                    `;
+                    
+                    // Update description
+                    movieDescription.textContent = movieData.description;
+                    
+                    // Update details
+                    movieDetails.innerHTML = `
+                        <div>
+                            <span class="text-gray-400">Director:</span>
+                            <p>${movieData.director || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <span class="text-gray-400">Cast:</span>
+                            <p>${movieData.cast ? movieData.cast.join(', ') : 'N/A'}</p>
+                        </div>
+                        <div>
+                            <span class="text-gray-400">Genre:</span>
+                            <p>${movieData.genres ? movieData.genres.join(', ') : 'N/A'}</p>
+                        </div>
+                        <div>
+                            <span class="text-gray-400">Release:</span>
+                            <p>${movieData.releaseDate || 'N/A'}</p>
+                        </div>
+                    `;
+                    
+                    // Set video source
+                    if (movieData.videoUrl) {
+                        player.innerHTML = `<source src="${movieData.videoUrl}" type="video/mp4">`;
+                    }
+                } else {
+                    // Movie not found, redirect to home
+                    window.location.href = "home2.html";
+                }
+            } catch (error) {
+                console.error("Error loading movie data:", error);
+            }
+        }
+        
+        // Check if user has interacted with this movie before
+        async function checkUserInteraction() {
+            try {
+                const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    
+                    // Check watchlist
+                    if (userData.watchlist?.includes(movieId)) {
+                        addToListBtn.innerHTML = '<i class="fas fa-bookmark"></i><span>In Watchlist</span>';
+                        addToListBtn.classList.add('text-teal-400');
+                    }
+                    
+                    // Check likes
+                    if (userData.likes?.includes(movieId)) {
+                        likeBtn.innerHTML = '<i class="fas fa-thumbs-up"></i><span>Liked</span>';
+                        likeBtn.classList.add('text-teal-400');
+                    }
+                }
+            } catch (error) {
+                console.error("Error checking user interaction:", error);
+            }
+        }
+        
+        // Load recommended movies
+        async function loadRecommendations() {
+            try {
+                // Get 5 random movies (in a real app, you'd implement actual recommendations)
+                const moviesQuery = query(collection(db, "movies"), where("__name__", "!=", movieId), limit(5));
+                const querySnapshot = await getDocs(moviesQuery);
+                
+                recommendations.innerHTML = '';
+                
+                querySnapshot.forEach((doc) => {
+                    const movie = doc.data();
+                    recommendations.innerHTML += `
+                        <div class="group relative rounded-lg overflow-hidden bg-[#1a1823] hover:bg-[#2a2833] transition-colors cursor-pointer">
+                            <img src="${movie.poster}" alt="${movie.title}" class="w-full aspect-[2/3] object-cover">
+                            <div class="p-3">
+                                <h3 class="font-medium truncate">${movie.title}</h3>
+                                <div class="flex items-center justify-between text-sm text-gray-400 mt-1">
+                                    <span>${movie.year}</span>
+                                    <div class="flex items-center">
+                                        <i class="fas fa-star text-yellow-400 mr-1 text-xs"></i>
+                                        <span>${movie.ratingValue}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <a href="movie.html?id=${doc.id}" class="bg-teal-400 hover:bg-teal-500 text-black px-4 py-2 rounded-full font-medium">
+                                    <i class="fas fa-play mr-2"></i> Play Now
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                console.error("Error loading recommendations:", error);
+            }
+        }
+        
+        // Initialize player controls (your existing player control code)
+        function initializePlayerControls() {
+            // All your existing player control logic goes here
+            // (play/pause, volume, progress bar, fullscreen, etc.)
+        }
+        
+        // User interaction functions (your existing like/watchlist/share code)
+    </script>
+      <script src="js/script.js"></script>
+</body>
+</html>

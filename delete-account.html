@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Delete Account | CMDb</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="styles/styles.css">
+  <link rel="stylesheet" href="styles/styles2.css">
+</head>
+<body class="bg-gray-900 flex items-center justify-center min-h-screen">
+  
+  <div class="bg-gray-800 p-10 rounded-2xl shadow-lg w-full max-w-md">
+    <h2 class="text-3xl font-bold text-center text-white mb-6">Delete Account</h2>
+    
+    <p class="text-gray-300 mb-6 text-center">
+      Are you sure you want to permanently delete your account? This action cannot be undone.
+    </p>
+    
+    <form id="deleteAccountForm" class="space-y-6">
+      <button type="submit"
+      class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-md transition duration-300">
+      Yes, Delete My Account
+    </button>
+  </form>
+  
+  <p class="mt-6 text-center text-sm text-gray-400">
+    Changed your mind? <a href="profile.html" class="text-cyan-400 hover:underline">Go back</a>
+  </p>
+</div>
+
+<script type="module">
+  import { deleteUser } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+  
+  const deleteAccountForm = document.getElementById('deleteAccountForm');
+  deleteAccountForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const user = auth.currentUser;
+    
+    if (user) {
+      try {
+        await deleteUser(user);
+        alert('Your account has been deleted successfully.');
+        window.location.href = "signup.html"; // ose ku e dërgon pas fshirjes
+      } catch (error) {
+        if (error.code === "auth/requires-recent-login") {
+          alert("Please login again to delete your account.");
+          window.location.href = "login.html";
+        } else {
+          alert(error.message);
+        }
+      }
+    } else {
+      alert("No user is signed in.");
+    }
+  });
+</script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+  import { getAuth } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+  
+  
+  const firebaseConfig = {
+    apiKey: "AIzaSyCjZv1YDGIb3DCXWQO231OfPMJTNKrjzKo",
+    authDomain: "cinema-al.firebaseapp.com",
+    projectId: "cinema-al",
+    storageBucket: "cinema-al.firebasestorage.app",
+    messagingSenderId: "1032816680533",
+    appId: "1:1032816680533:web:8276b33e95570691d93edc",
+    measurementId: "G-6SQNFJ6NMZ"
+  };
+  
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  window.auth = auth;
+</script>
+</body>
+</html>

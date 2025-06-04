@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>News | CinemaAL</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="icon" href="https://images.icon-icons.com/1603/PNG/512/news-newspaper-media-paper-press-article_108607.png" />
+  <link rel="stylesheet" href="styles/styles2.css" />
+  <script src="firebase-messaging-sw.js"></script>
+
+</head>
+<body class="text-white">
+  <nav class="flex items-center justify-between px-6 py-4 bg-[#1a1823]/90 backdrop-blur-md sticky top-0 z-50 border-b border-[#2a2833]">
+    <div class="flex items-center gap-8">
+      <div class="text-3xl font-bold">
+        <span class="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-pink-500">CinemaAL</span>
+      </div>
+      <ul class="hidden md:flex gap-6 text-sm items-center">
+        <li class="hover:text-red-400 transition-colors"><a href="home2.html">Home</a></li>
+        <li class="hover:text-red-400 transition-colors"><a href="movies.html" class="flex items-center gap-2"><i class="fas fa-film"></i> Movies</a></li>
+        <li class="hover:text-red-400 transition-colors"><a href="shows.html" class="flex items-center gap-2"><i class="fas fa-tv"></i> TV Shows</a></li>
+        <li class="hover:text-red-400 transition-colors"><a href="collections.html" class="flex items-center gap-2"><i class="fas fa-layer-group"></i> Collections</a></li>
+        <li class="bg-gradient-to-r from-red-600 to-pink-600 text-white px-4 py-2 rounded-full font-medium"><a href="newss.html" class="flex items-center gap-2"><i class="fas fa-newspaper"></i> News</a></li>
+      </ul>
+    </div>
+    <button class="mobile-menu-button md:hidden" id="mobile-menu-toggle" title="Toggle mobile menu">
+      <i class="fas fa-bars"></i>
+    </button>
+    <div class="flex items-center gap-6">
+      <div class="search-container relative">
+        <button id="search-toggle" class="p-2 rounded-full hover:bg-[#2a2833] transition-colors" title="Search">
+          <i class="fas fa-search text-lg"></i>
+        </button>
+        <input type="text" 
+        class="search-bar absolute right-0 bg-[#2a2833] text-white rounded-full focus:outline-none focus:ring-2 focus:ring-red-500"
+        placeholder="Search movies, shows..."
+        id="search-input">
+      </div>
+      <div class="hidden md:flex items-center gap-2">
+        <button class="p-2 rounded-full hover:bg-[#2a2833] transition-colors relative" id="notifications-btn" title="Notifications">
+          <i class="fas fa-bell"></i>
+          <span class="absolute top-0 right-0 bg-red-600 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center hidden" id="notification-badge"></span>
+        </button>
+        <button class="p-2 rounded-full hover:bg-[#2a2833] transition-colors" id="watchlist-btn" title="Watchlist">
+          <i class="fas fa-bookmark"></i>
+        </button>
+      </div>
+      <div class="relative" id="dropdown">
+        <button id="dropdown-button" class="flex items-center gap-2 focus:outline-none hover:bg-[#2a2833] px-3 py-2 rounded-full transition-colors">
+          <img alt="Profile" class="w-8 h-8 rounded-full border-2 border-red-500" id="profile-image">
+          <span class="hidden md:block font-medium" id="profile-name">Profile</span>
+          <i class="fas fa-chevron-down text-xs"></i>
+        </button>
+        <div id="dropdown-menu" class="dropdown-menu absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
+          <div class="px-4 py-2 border-b">
+            <p class="text-sm font-medium text-gray-900">Signed in as</p>
+            <p class="text-sm text-gray-600 truncate" id="user-email">user@example.com</p>
+          </div>
+          <a href="edit-profile.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"><i class="fas fa-user mr-2"></i>Profile</a>
+          <a href="watchlist.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"><i class="fas fa-list mr-2"></i>Watchlist</a>
+          <a href="settings.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"><i class="fas fa-cog mr-2"></i>Settings</a>
+          <div class="border-t border-gray-200"></div>
+          <a href="#" id="logout-btn" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"><i class="fas fa-sign-out-alt mr-2"></i>Sign out</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+  <div class="mobile-menu" id="mobile-menu">
+    <ul>
+      <li><a href="home2.html" class="text-white"><i class="fas fa-home"></i> Home</a></li>
+      <li><a href="movies.html" class="text-white"><i class="fas fa-film"></i> Movies</a></li>
+      <li><a href="shows.html" class="text-white"><i class="fas fa-tv"></i> TV Shows</a></li>
+      <li><a href="collections.html" class="text-white"><i class="fas fa-layer-group"></i> Collections</a></li>
+      <li><a href="newss.html" class="bg-gradient-to-r from-red-600 to-pink-600 text-white"><i class="fas fa-newspaper"></i> News</a></li>
+      <li><a href="watchlist.html" class="text-white"><i class="fas fa-bookmark"></i> Watchlist</a></li>
+      <li><a href="settings.html" class="text-white"><i class="fas fa-cog"></i> Settings</a></li>
+    </ul>
+  </div>
+  <!-- Main Content -->
+  <main class="container mx-auto px-6 py-12">
+    <div class="flex justify-between items-center mb-12">
+      <h1 class="text-4xl font-bold">Latest News</h1>
+      <div class="flex gap-4">
+        <button class="category-filter px-4 py-2 rounded-full bg-red-600 text-white" data-category="all">All</button>
+        <button class="category-filter px-4 py-2 rounded-full bg-[#2a2833] hover:bg-[#3a3843]" data-category="movie">Movies</button>
+        <button class="category-filter px-4 py-2 rounded-full bg-[#2a2833] hover:bg-[#3a3843]" data-category="tv">TV</button>
+        <button class="category-filter px-4 py-2 rounded-full bg-[#2a2833] hover:bg-[#3a3843]" data-category="awards">Awards</button>
+      </div>
+    </div>
+    
+    <!-- Featured Article -->
+    <div class="mb-16" id="featured-article-container">
+      <div class="bg-[#1a1823] rounded-xl overflow-hidden skeleton h-96"></div>
+    </div>
+    
+    <!-- News Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="news-container">
+      <!-- Skeleton Loaders -->
+      <div class="bg-[#1a1823] rounded-lg overflow-hidden">
+        <div class="aspect-video skeleton"></div>
+        <div class="p-6">
+          <div class="h-6 w-3/4 skeleton mb-4"></div>
+          <div class="h-4 w-1/2 skeleton mb-4"></div>
+          <div class="h-20 w-full skeleton mb-4"></div>
+          <div class="h-4 w-1/3 skeleton"></div>
+        </div>
+      </div>
+      <div class="bg-[#1a1823] rounded-lg overflow-hidden">
+        <div class="aspect-video skeleton"></div>
+        <div class="p-6">
+          <div class="h-6 w-3/4 skeleton mb-4"></div>
+          <div class="h-4 w-1/2 skeleton mb-4"></div>
+          <div class="h-20 w-full skeleton mb-4"></div>
+          <div class="h-4 w-1/3 skeleton"></div>
+        </div>
+      </div>
+      <div class="bg-[#1a1823] rounded-lg overflow-hidden">
+        <div class="aspect-video skeleton"></div>
+        <div class="p-6">
+          <div class="h-6 w-3/4 skeleton mb-4"></div>
+          <div class="h-4 w-1/2 skeleton mb-4"></div>
+          <div class="h-20 w-full skeleton mb-4"></div>
+          <div class="h-4 w-1/3 skeleton"></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Load More Button -->
+    <div class="text-center mt-12">
+      <button id="load-more" class="bg-[#2a2833] hover:bg-[#3a3843] text-white px-6 py-3 rounded-full font-medium transition-colors">
+        Load More News
+      </button>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-[#1a1823] border-t border-[#2a2833] py-12">
+    <div class="container mx-auto px-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <h3 class="text-xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-pink-500">CinemaAL</h3>
+          <p class="text-gray-400 text-sm">Your ultimate destination for movies, TV shows, and entertainment news. Discover, watch, and enjoy.</p>
+          <div class="flex gap-4 mt-4">
+            <a href="#" class="text-gray-400 hover:text-white transition-colors" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" class="text-gray-400 hover:text-white transition-colors" title="Twitter"><i class="fab fa-twitter"></i></a>
+            <a href="#" class="text-gray-400 hover:text-white transition-colors" title="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="#" class="text-gray-400 hover:text-white transition-colors" title="YouTube"><i class="fab fa-youtube"></i></a>
+          </div>
+        </div>
+        
+        <div>
+          <h4 class="font-bold mb-4">Navigation</h4>
+          <ul class="space-y-2">
+            <li><a href="index.html" class="text-gray-400 hover:text-white transition-colors">Home</a></li>
+            <li><a href="movies.html" class="text-gray-400 hover:text-white transition-colors">Movies</a></li>
+            <li><a href="shows.html" class="text-gray-400 hover:text-white transition-colors">TV Shows</a></li>
+            <li><a href="news.html" class="text-gray-400 hover:text-white transition-colors">News</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="font-bold mb-4">Legal</h4>
+          <ul class="space-y-2">
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Terms of Use</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Privacy Policy</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Cookie Policy</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="font-bold mb-4">Newsletter</h4>
+          <p class="text-gray-400 text-sm mb-4">Subscribe to our newsletter for the latest updates and recommendations.</p>
+          <form class="flex" id="newsletter-form">
+            <input type="email" placeholder="Your email" class="bg-[#2a2833] text-white px-4 py-2 rounded-l focus:outline-none focus:ring-1 focus:ring-red-500 w-full" required>
+            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-r transition-colors" title="Subscribe">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </form>
+        </div>
+      </div>
+      
+      <div class="border-t border-[#2a2833] mt-8 pt-8 text-center text-gray-400 text-sm">
+        <p>© 2025 CinemaAL. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module">
+    // Import Firebase modules
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+    import { getFirestore, collection, query, where, getDocs, orderBy, limit, doc, getDoc, startAfter } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyCjZv1YDGIb3DCXWQO231OfPMJTNKrjzKo",
+      authDomain: "cinema-al.firebaseapp.com",
+      projectId: "cinema-al",
+      storageBucket: "cinema-al.appspot.com",
+      messagingSenderId: "1032816680533",
+      appId: "1:1032816680533:web:8276b33e95570691d93edc",
+      measurementId: "G-6SQNFJ6NMZ"
+    };
+    
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    
+    // DOM Elements
+    const elements = {
+      featuredArticleContainer: document.getElementById('featured-article-container'),
+      newsContainer: document.getElementById('news-container'),
+      loadMoreBtn: document.getElementById('load-more'),
+      categoryFilters: document.querySelectorAll('.category-filter'),
+      searchInput: document.getElementById('search-input'),
+      searchToggle: document.getElementById('search-toggle'),
+      searchContainer: document.querySelector('.search-container'),
+      dropdownButton: document.getElementById('dropdown-button'),
+      dropdownMenu: document.getElementById('dropdown-menu'),
+      profileImage: document.getElementById('profile-image'),
+      profileName: document.getElementById('profile-name'),
+      userEmail: document.getElementById('user-email'),
+      logoutBtn: document.getElementById('logout-btn'),
+      newsletterForm: document.getElementById('newsletter-form')
+    };
+    
+    // State
+    let state = {
+      currentUser: null,
+      currentCategory: 'all',
+      lastVisible: null,
+      hasMoreNews: true
+    };
+    
+    // Initialize the app
+    function initApp() {
+      setupAuthStateListener();
+      setupEventListeners();
+      fetchFeaturedArticle();
+      fetchNews();
+    }
+    
+    // Setup Firebase auth state listener
+    function setupAuthStateListener() {
+      onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          state.currentUser = user;
+          elements.userEmail.textContent = user.email;
+          
+          // Load user profile
+          const userRef = doc(db, "users", user.uid);
+          const userSnap = await getDoc(userRef);
+          
+          if (userSnap.exists()) {
+            const userData = userSnap.data();
+            if (userData.profileImage) {
+              elements.profileImage.src = userData.profileImage;
+            }
+            if (userData.name) {
+              elements.profileName.textContent = userData.name;
+            }
+          }
+        } else {
+          // User is signed out
+          window.location.href = "login.html";
+        }
+      });
+    }
+    
+    // Setup event listeners
+    function setupEventListeners() {
+      // Category filters
+      elements.categoryFilters.forEach(filter => {
+        filter.addEventListener('click', function() {
+          elements.categoryFilters.forEach(f => f.classList.remove('bg-red-600', 'text-white'));
+          elements.categoryFilters.forEach(f => f.classList.add('bg-[#2a2833]'));
+          
+          this.classList.add('bg-red-600', 'text-white');
+          this.classList.remove('bg-[#2a2833]');
+          
+          state.currentCategory = this.dataset.category;
+          state.lastVisible = null;
+          state.hasMoreNews = true;
+          elements.newsContainer.innerHTML = createSkeletonLoaders(3);
+          fetchNews();
+        });
+      });
+      
+      // Load more button
+      elements.loadMoreBtn.addEventListener('click', fetchNews);
+      
+      // Search functionality
+      elements.searchToggle.addEventListener('click', () => {
+        elements.searchContainer.classList.toggle('active');
+        if (elements.searchContainer.classList.contains('active')) {
+          elements.searchInput.focus();
+        }
+      });
+      
+      elements.searchInput.addEventListener('input', debounce((e) => {
+        if (e.target.value.length > 2) {
+          searchNews(e.target.value);
+        } else if (e.target.value.length === 0) {
+          // Reset to normal view when search is cleared
+          state.lastVisible = null;
+          state.hasMoreNews = true;
+          elements.newsContainer.innerHTML = createSkeletonLoaders(3);
+          fetchNews();
+        }
+      }, 300));
+      
+      // Dropdown menu
+      elements.dropdownButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        elements.dropdownMenu.classList.toggle('show');
+      });
+      
+      document.addEventListener('click', (e) => {
+        if (!elements.dropdownButton.contains(e.target)) {
+          elements.dropdownMenu.classList.remove('show');
+        }
+      });
+      
+      // Logout button
+      elements.logoutBtn.addEventListener('click', async () => {
+        try {
+          await signOut(auth);
+        } catch (error) {
+          console.error("Logout error:", error);
+          alert("Failed to sign out. Please try again.");
+        }
+      });
+      
+      // Newsletter form
+      elements.newsletterForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = e.target.querySelector('input').value;
+        // Here you would typically send this to your backend
+        alert(`Thank you for subscribing with ${email}!`);
+        e.target.reset();
+      });
+    }
+    
+    // Create skeleton loaders
+    function createSkeletonLoaders(count) {
+      return Array(count).fill(`
+        <div class="bg-[#1a1823] rounded-lg overflow-hidden">
+          <div class="aspect-video skeleton"></div>
+          <div class="p-6">
+            <div class="h-6 w-3/4 skeleton mb-4"></div>
+            <div class="h-4 w-1/2 skeleton mb-4"></div>
+            <div class="h-20 w-full skeleton mb-4"></div>
+            <div class="h-4 w-1/3 skeleton"></div>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    // Fetch featured article
+    async function fetchFeaturedArticle() {
+      try {
+        const newsRef = collection(db, "news");
+        const q = query(newsRef, where("isFeatured", "==", true), limit(1));
+        const querySnapshot = await getDocs(q);
+        
+        if (!querySnapshot.empty) {
+          const featuredDoc = querySnapshot.docs[0];
+          const featuredArticle = {
+            id: featuredDoc.id,
+            ...featuredDoc.data()
+          };
+          
+          renderFeaturedArticle(featuredArticle);
+        } else {
+          // Fallback to latest article if no featured article
+          const q = query(newsRef, orderBy("date", "desc"), limit(1));
+          const fallbackSnapshot = await getDocs(q);
+          
+          if (!fallbackSnapshot.empty) {
+            const featuredDoc = fallbackSnapshot.docs[0];
+            const featuredArticle = {
+              id: featuredDoc.id,
+              ...featuredDoc.data()
+            };
+            renderFeaturedArticle(featuredArticle);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching featured article:", error);
+        elements.featuredArticleContainer.innerHTML = `
+          <div class="bg-[#1a1823] rounded-xl p-8 text-center">
+            <p class="text-gray-400">Failed to load featured article. Please try again later.</p>
+          </div>
+        `;
+      }
+    }
+    
+    // Render featured article
+    function renderFeaturedArticle(article) {
+      const date = article.date ? new Date(article.date).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      }) : 'Recent';
+      
+      const categoryClass = getCategoryClass(article.category);
+      
+      elements.featuredArticleContainer.innerHTML = `
+        <div class="bg-[#1a1823] rounded-xl overflow-hidden group">
+          <div class="relative aspect-video lg:aspect-[3/1] w-full">
+            <div class="blur-load absolute inset-0" style="background-image: url('${article.imageUrl?.replace('600x400', '300x200') || 'https://via.placeholder.com/1200x400/1a1823/ffffff?text=CinemaAL+News'}')">
+              <img src="${article.imageUrl || 'https://via.placeholder.com/1200x400/1a1823/ffffff?text=CinemaAL+News'}" 
+                   alt="${article.title}"
+                   class="w-full h-full object-cover transition-opacity duration-300"
+                   loading="lazy"
+                   onload="this.style.opacity='1'; this.parentElement.style.backgroundImage='none'"
+                   onerror="this.src='https://via.placeholder.com/1200x400/1a1823/ffffff?text=CinemaAL+News'; this.style.opacity='1'; this.parentElement.style.backgroundImage='none'"
+                   style="opacity: 0">
+            </div>
+            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent flex items-end p-8">
+              <div class="max-w-4xl">
+                <span class="${categoryClass} text-white px-3 py-1 rounded-full text-xs font-medium mb-4 inline-block">
+                  ${article.category || 'News'}
+                </span>
+                <h2 class="text-3xl lg:text-4xl font-bold mb-4">${article.title}</h2>
+                <p class="text-gray-300 mb-6">${article.summary || ''}</p>
+                <div class="flex items-center gap-4 text-sm text-gray-400">
+                  <span>${date}</span>
+                  <span>•</span>
+                  <span>${article.readTime || '5 min read'}</span>
+                </div>
+                <a href="news-detail.html?id=${article.id}" class="mt-6 inline-block bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-full font-medium transition-colors">
+                  Read Full Story
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    
+    // Fetch news articles
+    async function fetchNews() {
+      if (!state.hasMoreNews) return;
+      
+      try {
+        // Show loading state
+        if (!state.lastVisible) {
+          elements.newsContainer.innerHTML = createSkeletonLoaders(0);
+        } else {
+          elements.loadMoreBtn.disabled = true;
+          elements.loadMoreBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Loading...';
+        }
+        
+        const newsRef = collection(db, "news");
+        let q;
+        
+        if (state.currentCategory === 'all') {
+          q = query(
+            newsRef,
+            orderBy("date", "desc"),
+            ...(state.lastVisible ? [startAfter(state.lastVisible)] : []),
+            limit(6)
+          );
+        } else {
+          q = query(
+            newsRef,
+            where("category", "==", state.currentCategory),
+            orderBy("date", "desc"),
+            ...(state.lastVisible ? [startAfter(state.lastVisible)] : []),
+            limit(6)
+          );
+        }
+        
+        const querySnapshot = await getDocs(q);
+        
+        if (querySnapshot.empty) {
+          state.hasMoreNews = false;
+          elements.loadMoreBtn.style.display = 'none';
+          if (!state.lastVisible) {
+            elements.newsContainer.innerHTML = `
+              <div class="col-span-3 text-center py-12">
+                <p class="text-gray-400">No news articles found.</p>
+              </div>
+            `;
+          }
+          return;
+        }
+        
+        state.lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+        
+        const articles = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        
+        if (state.lastVisible) {
+          // Append new articles
+          renderNewsArticles(articles, true);
+        } else {
+          // Initial load
+          renderNewsArticles(articles);
+        }
+        
+        if (querySnapshot.docs.length < 6) {
+          state.hasMoreNews = false;
+          elements.loadMoreBtn.style.display = 'none';
+        } else {
+          elements.loadMoreBtn.disabled = false;
+          elements.loadMoreBtn.textContent = 'Load More';
+        }
+      } catch (error) {
+        console.error("Error fetching news:", error);
+        elements.newsContainer.innerHTML = `
+          <div class="col-span-3 text-center py-12">
+            <p class="text-gray-400">Failed to load news. Please try again later.</p>
+          </div>
+        `;
+        elements.loadMoreBtn.disabled = false;
+        elements.loadMoreBtn.textContent = 'Load More';
+      }
+    }
+    
+    // Render news articles
+    function renderNewsArticles(articles, append = false) {
+      const articlesHTML = articles.map(article => {
+        const date = article.date ? new Date(article.date).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        }) : 'Recent';
+        
+        const categoryClass = getCategoryClass(article.category);
+        
+        return `
+          <div class="bg-[#1a1823] rounded-lg overflow-hidden group hover:translate-y-[-5px] transition-transform duration-300">
+            <div class="relative aspect-video overflow-hidden">
+              <div class="blur-load absolute inset-0" style="background-image: url('${article.imageUrl?.replace('600x400', '300x200') || 'https://via.placeholder.com/600x400/1a1823/ffffff?text=News'}')">
+                <img src="${article.imageUrl || 'https://via.placeholder.com/600x400/1a1823/ffffff?text=News'}" 
+                     alt="${article.title}"
+                     class="w-full h-full object-cover transition-opacity duration-300 group-hover:scale-105"
+                     loading="lazy"
+                     onload="this.style.opacity='1'; this.parentElement.style.backgroundImage='none'"
+                     onerror="this.src='https://via.placeholder.com/600x400/1a1823/ffffff?text=News'; this.style.opacity='1'; this.parentElement.style.backgroundImage='none'"
+                     style="opacity: 0">
+              </div>
+              <div class="absolute top-4 right-4">
+                <span class="${categoryClass} text-white px-3 py-1 rounded-full text-xs font-medium">
+                  ${article.category || 'News'}
+                </span>
+              </div>
+            </div>
+            <div class="p-6">
+              <div class="flex items-center gap-2 text-sm text-gray-400 mb-4">
+                <span>${date}</span>
+                <span>•</span>
+                <span>${article.readTime || '3 min read'}</span>
+              </div>
+              <h3 class="text-xl font-bold mb-4">${article.title}</h3>
+              <p class="text-gray-400 mb-6">${article.summary || 'No summary available.'}</p>
+              <a href="news-detail.html?id=${article.id}" class="text-red-400 hover:text-red-300 font-medium flex items-center gap-2">
+                Read More <i class="fas fa-arrow-right text-xs"></i>
+              </a>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      if (append) {
+        elements.newsContainer.insertAdjacentHTML('beforeend', articlesHTML);
+      } else {
+        elements.newsContainer.innerHTML = articlesHTML;
+      }
+    }
+    
+    // Search news
+    async function searchNews(queryText) {
+      try {
+        elements.newsContainer.innerHTML = createSkeletonLoaders(3);
+        
+        const newsRef = collection(db, "news");
+        const q = query(
+          newsRef,
+          where("keywords", "array-contains", queryText.toLowerCase()),
+          orderBy("date", "desc"),
+          limit(12)
+        );
+        
+        const querySnapshot = await getDocs(q);
+        const articles = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        
+        if (articles.length === 0) {
+          elements.newsContainer.innerHTML = `
+            <div class="col-span-3 text-center py-12">
+              <p class="text-gray-400">No results found for "${queryText}"</p>
+            </div>
+          `;
+        } else {
+          renderNewsArticles(articles);
+        }
+        
+        elements.loadMoreBtn.style.display = 'none';
+      } catch (error) {
+        console.error("Error searching news:", error);
+        elements.newsContainer.innerHTML = `
+          <div class="col-span-3 text-center py-12">
+            <p class="text-gray-400">Failed to search news. Please try again later.</p>
+          </div>
+        `;
+      }
+    }
+    
+    // Get category class for styling
+    function getCategoryClass(category) {
+      if (!category) return 'category-movie';
+      
+      const normalized = category.toLowerCase();
+      if (normalized.includes('tv') || normalized.includes('series')) {
+        return 'category-tv';
+      } else if (normalized.includes('award')) {
+        return 'category-awards';
+      } else {
+        return 'category-movie';
+      }
+    }
+    
+    // Debounce function for search
+    function debounce(func, wait) {
+      let timeout;
+      return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+      };
+    }
+    
+    // Initialize the app when DOM is loaded
+    document.addEventListener('DOMContentLoaded', initApp);
+  </script>
+  <script src="js/script.js"></script>
+</body>
+</html>

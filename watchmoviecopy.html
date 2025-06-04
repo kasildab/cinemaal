@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watch Movie | Cinema AL</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/1179/1179120.png" />
+    <script src="firebase-messaging-sw.js"></script>
+
+    <style>
+        .player-container {
+            aspect-ratio: 16/9;
+        }
+        .progress-bar {
+            height: 4px;
+        }
+        .progress-bar:hover {
+            height: 6px;
+        }
+        .volume-slider {
+            width: 0;
+            transition: width 0.2s;
+        }
+        .volume-container:hover .volume-slider {
+            width: 80px;
+        }
+        .quality-option {
+            transition: all 0.2s;
+        }
+        .quality-option:hover {
+            background-color: rgba(45, 212, 191, 0.1);
+        }
+        .quality-option.selected {
+            background-color: rgba(45, 212, 191, 0.2);
+            border-color: rgb(45, 212, 191);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+    <!-- Navigation -->
+    <nav class="flex items-center justify-between px-6 py-4 bg-[#1a1823]/90 backdrop-blur-md sticky top-0 z-50 border-b border-[#2a2833]">
+        <div class="flex items-center gap-8">
+            <div class="text-3xl font-bold">
+                <a href="home2.html" class="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-pink-500">CinemaAL</a>
+            </div>
+        </div>
+        <div class="flex items-center gap-6">
+            <a href="home2.html" class="p-2 rounded-full hover:bg-[#2a2833] transition-colors" title="Back to Home">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-6 max-w-7xl">
+        <!-- Video Player Section -->
+        <section class="mb-8">
+            <div class="player-container w-full bg-black rounded-lg overflow-hidden relative">
+                <!-- Video Player -->
+                <video id="moviePlayer" class="w-full h-full" poster="https://m.media-amazon.com/images/M/MV5BMTY1NzY2ODAzMF5BMl5BanBnXkFtZTgwMzg1NzY2MTI@._V1_.jpg">
+                    <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                
+                <!-- Custom Controls -->
+                <div id="playerControls" class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 opacity-0 transition-opacity duration-300">
+                    <!-- Progress Bar -->
+                    <div class="flex items-center mb-2 group">
+                        <span id="currentTime" class="text-xs text-gray-300 mr-2">0:00</span>
+                        <div class="flex-1 h-1 bg-gray-600 rounded-full cursor-pointer group-hover:h-1.5 transition-all">
+                            <div id="progressBar" class="progress-bar h-full bg-teal-400 rounded-full relative" style="width: 0%">
+                                <div class="absolute right-0 top-1/2 transform -translate-y-1/2 w-3 h-3 bg-teal-400 rounded-full opacity-0 group-hover:opacity-100"></div>
+                            </div>
+                        </div>
+                        <span id="duration" class="text-xs text-gray-300 ml-2">0:00</span>
+                    </div>
+                    
+                    <!-- Control Buttons -->
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <button id="playPauseBtn" class="text-white hover:text-teal-400 transition-colors" title="Play or Pause">
+                                <i class="fas fa-play text-lg"></i>
+                            </button>
+                            <button id="rewindBtn" class="text-gray-300 hover:text-white transition-colors" title="Rewind">
+                                <i class="fas fa-backward text-lg"></i>
+                            </button>
+                            <button id="forwardBtn" class="text-gray-300 hover:text-white transition-colors" title="Forward">
+                                <i class="fas fa-forward text-lg"></i>
+                            </button>
+                            
+                            <div class="flex items-center volume-container">
+                                <button id="muteBtn" class="text-gray-300 hover:text-white transition-colors mr-2" title="Mute or Unmute">
+                                    <i class="fas fa-volume-up text-lg"></i>
+                                </button>
+                                <input id="volumeSlider" type="range" min="0" max="1" step="0.01" value="1" 
+                                       class="volume-slider h-1 bg-gray-600 rounded-full appearance-none cursor-pointer">
+                            </div>
+                            
+                            <span id="timeDisplay" class="text-sm text-gray-300">0:00 / 0:00</span>
+                        </div>
+                        
+                        <div class="flex items-center space-x-4">
+                            <div class="relative group">
+                                <button id="settingsBtn" class="text-gray-300 hover:text-white transition-colors" title="Settings">
+                                    <i class="fas fa-cog text-lg"></i>
+                                </button>
+                                <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-40 bg-gray-800 rounded-md shadow-lg py-2 hidden group-hover:block">
+                                    <div class="px-3 py-1 text-sm font-medium text-gray-400">Quality</div>
+                                    <div id="qualityOptions" class="space-y-1 px-2">
+                                        <div class="quality-option selected px-3 py-1 text-sm rounded border border-transparent cursor-pointer" data-quality="auto">Auto</div>
+                                        <div class="quality-option px-3 py-1 text-sm rounded border border-transparent cursor-pointer" data-quality="1080">1080p</div>
+                                        <div class="quality-option px-3 py-1 text-sm rounded border border-transparent cursor-pointer" data-quality="720">720p</div>
+                                        <div class="quality-option px-3 py-1 text-sm rounded border border-transparent cursor-pointer" data-quality="480">480p</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button id="fullscreenBtn" class="text-gray-300 hover:text-white transition-colors" title="Toggle Fullscreen">
+                                <i class="fas fa-expand text-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Play Button Overlay -->
+                <div id="playOverlay" class="absolute inset-0 flex items-center justify-center cursor-pointer">
+                    <div class="w-16 h-16 bg-black/50 rounded-full flex items-center justify-center">
+                        <i class="fas fa-play text-2xl text-white"></i>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Movie Info Section -->
+        <section class="mb-8">
+            <div class="flex flex-col md:flex-row gap-6">
+                <div class="flex-shrink-0">
+                    <img src="https://m.media-amazon.com/images/M/MV5BNzAzYjczMjAtZjI3Mi00NWU3LThlYmMtMDNjY2EyYjY0YWZmXkEyXkFqcGc@._V1_.jpg" alt="Movie Poster" class="w-64 rounded-lg shadow-lg">
+                </div>
+                <div class="flex-grow">
+                    <h1 class="text-3xl font-bold mb-2">Big Buck Bunny</h1>
+                    <div class="flex items-center flex-wrap gap-3 mb-4">
+                        <span class="bg-teal-400/20 text-teal-400 px-2 py-1 rounded text-xs">HD</span>
+                        <span class="text-gray-300">2023</span>
+                        <span class="text-gray-300">1h 35m</span>
+                        <span class="text-gray-300">PG-13</span>
+                        <div class="flex items-center">
+                            <i class="fas fa-star text-yellow-400 mr-1"></i>
+                            <span>8.5/10</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex space-x-4 mb-4">
+                        <button id="addToListBtn" class="flex items-center space-x-2 bg-[#2a2833] hover:bg-[#3a3843] px-4 py-2 rounded-lg transition-colors">
+                            <i class="far fa-bookmark"></i>
+                            <span>Watchlist</span>
+                        </button>
+                        <button id="likeBtn" class="flex items-center space-x-2 bg-[#2a2833] hover:bg-[#3a3843] px-4 py-2 rounded-lg transition-colors">
+                            <i class="far fa-thumbs-up"></i>
+                            <span>Like</span>
+                        </button>
+                        <button id="shareBtn" class="flex items-center space-x-2 bg-[#2a2833] hover:bg-[#3a3843] px-4 py-2 rounded-lg transition-colors">
+                            <i class="fas fa-share"></i>
+                            <span>Share</span>
+                        </button>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h2 class="text-xl font-semibold mb-2">Overview</h2>
+                        <p class="text-gray-300">
+                            Big Buck Bunny tells the story of a giant rabbit with a heart bigger than himself. When one sunny day three rodents rudely harass him, something snaps... and the rabbit ain't no bunny anymore! In the typical cartoon tradition he prepares the nasty rodents a comical revenge.
+                        </p>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                            <span class="text-gray-400">Director:</span>
+                            <p>Sacha Goedegebure</p>
+                        </div>
+                        <div>
+                            <span class="text-gray-400">Cast:</span>
+                            <p>Big Buck Bunny, Frank the Flying Squirrel, Rinky the Rat</p>
+                        </div>
+                        <div>
+                            <span class="text-gray-400">Genre:</span>
+                            <p>Animation, Comedy, Family</p>
+                        </div>
+                        <div>
+                            <span class="text-gray-400">Release:</span>
+                            <p>April 10, 2008</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recommendations Section -->
+        <section>
+            <h2 class="text-2xl font-bold mb-6">More Like This</h2>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <!-- Movie Card 1 -->
+                <div class="group relative rounded-lg overflow-hidden bg-[#1a1823] hover:bg-[#2a2833] transition-colors cursor-pointer">
+                    <img src="https://pics.filmaffinity.com/Elephants_Dream_S-785016933-large.jpg" alt="Movie 1" class="w-full aspect-[2/3] object-cover">
+                    <div class="p-3">
+                        <h3 class="font-medium truncate">Elephants Dream</h3>
+                        <div class="flex items-center justify-between text-sm text-gray-400 mt-1">
+                            <span>2006</span>
+                            <div class="flex items-center">
+                                <i class="fas fa-star text-yellow-400 mr-1 text-xs"></i>
+                                <span>7.2</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <a href="watchmovie.html?movie=elephants-dream&title=Elephants%20Dream" class="bg-teal-400 hover:bg-teal-500 text-black px-4 py-2 rounded-full font-medium">
+                            <i class="fas fa-play mr-2"></i> Play Now
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Movie Card 2 -->
+                <div class="group relative rounded-lg overflow-hidden bg-[#1a1823] hover:bg-[#2a2833] transition-colors cursor-pointer">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/8/8f/Sintel_poster.jpg" alt="Movie 2" class="w-full aspect-[2/3] object-cover">
+                    <div class="p-3">
+                        <h3 class="font-medium truncate">Sintel</h3>
+                        <div class="flex items-center justify-between text-sm text-gray-400 mt-1">
+                            <span>2010</span>
+                            <div class="flex items-center">
+                                <i class="fas fa-star text-yellow-400 mr-1 text-xs"></i>
+                                <span>8.1</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <button class="bg-teal-400 hover:bg-teal-500 text-black px-4 py-2 rounded-full font-medium">
+                            <i class="fas fa-play mr-2"></i> Play Now
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Movie Card 3 -->
+                <div class="group relative rounded-lg overflow-hidden bg-[#1a1823] hover:bg-[#2a2833] transition-colors cursor-pointer">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSNT_sVMyAqZpYq81t-mdC5N8Ww0OL2GRbgHA&s" alt="Movie 3" class="w-full aspect-[2/3] object-cover">
+                    <div class="p-3">
+                        <h3 class="font-medium truncate">Tears of Steel</h3>
+                        <div class="flex items-center justify-between text-sm text-gray-400 mt-1">
+                            <span>2012</span>
+                            <div class="flex items-center">
+                                <i class="fas fa-star text-yellow-400 mr-1 text-xs"></i>
+                                <span>6.8</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <button class="bg-teal-400 hover:bg-teal-500 text-black px-4 py-2 rounded-full font-medium">
+                            <i class="fas fa-play mr-2"></i> Play Now
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Movie Card 4 -->
+                <div class="group relative rounded-lg overflow-hidden bg-[#1a1823] hover:bg-[#2a2833] transition-colors cursor-pointer">
+                    <img src="https://m.media-amazon.com/images/M/MV5BNWE4MzY4NWYtMWI2Yy00MTc5LWExNGYtNWYzNGFmN2Y0NTk5XkEyXkFqcGc@._V1_.jpg" alt="Movie 4" class="w-full aspect-[2/3] object-cover">
+                    <div class="p-3">
+                        <h3 class="font-medium truncate">Caminandes</h3>
+                        <div class="flex items-center justify-between text-sm text-gray-400 mt-1">
+                            <span>2013</span>
+                            <div class="flex items-center">
+                                <i class="fas fa-star text-yellow-400 mr-1 text-xs"></i>
+                                <span>7.5</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <button class="bg-teal-400 hover:bg-teal-500 text-black px-4 py-2 rounded-full font-medium">
+                            <i class="fas fa-play mr-2"></i> Play Now
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Movie Card 5 -->
+                <div class="group relative rounded-lg overflow-hidden bg-[#1a1823] hover:bg-[#2a2833] transition-colors cursor-pointer">
+                    <img src="https://m.media-amazon.com/images/M/MV5BNTljNzNkMmItYzQxNi00MTM3LWIxZmYtMDY2ZDA5ZTU4NTE3XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg" alt="Movie 5" class="w-full aspect-[2/3] object-cover">
+                    <div class="p-3">
+                        <h3 class="font-medium truncate">Agent 327</h3>
+                        <div class="flex items-center justify-between text-sm text-gray-400 mt-1">
+                            <span>2017</span>
+                            <div class="flex items-center">
+                                <i class="fas fa-star text-yellow-400 mr-1 text-xs"></i>
+                                <span>8.3</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <button class="bg-teal-400 hover:bg-teal-500 text-black px-4 py-2 rounded-full font-medium">
+                            <i class="fas fa-play mr-2"></i> Play Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Firebase & Player Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyCjZv1YDGIb3DCXWQO231OfPMJTNKrjzKo",
+            authDomain: "cinema-al.firebaseapp.com",
+            projectId: "cinema-al",
+            storageBucket: "cinema-al.appspot.com",
+            messagingSenderId: "1032816680533",
+            appId: "1:1032816680533:web:8276b33e95570691d93edc"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        // DOM Elements
+        const player = document.getElementById('moviePlayer');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const rewindBtn = document.getElementById('rewindBtn');
+        const forwardBtn = document.getElementById('forwardBtn');
+        const muteBtn = document.getElementById('muteBtn');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const progressBar = document.getElementById('progressBar');
+        const currentTime = document.getElementById('currentTime');
+        const duration = document.getElementById('duration');
+        const timeDisplay = document.getElementById('timeDisplay');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        const settingsBtn = document.getElementById('settingsBtn');
+        const qualityOptions = document.getElementById('qualityOptions');
+        const playOverlay = document.getElementById('playOverlay');
+        const playerControls = document.getElementById('playerControls');
+        const addToListBtn = document.getElementById('addToListBtn');
+        const likeBtn = document.getElementById('likeBtn');
+        const shareBtn = document.getElementById('shareBtn');
+        
+        let currentUser = null;
+        let isPlaying = false;
+        let isMuted = false;
+        let isFullscreen = false;
+        let hideControlsTimeout;
+        const urlParams = new URLSearchParams(window.location.search);
+        let movieId = urlParams.get('movie') || "big-buck-bunny";
+        const movieTitle = urlParams.get('title') || "Big Buck Bunny";
+        
+        // Initialize the page
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                await loadMovieData();
+                await checkUserInteraction();
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+        
+        // Load movie data from Firestore
+        async function loadMovieData() {
+    try {
+        // First set the title from URL params
+        document.querySelector('h1').textContent = movieTitle;
+        
+        // Then try to load from Firestore
+        const movieDoc = await getDoc(doc(db, "movies", movieId));
+        if (movieDoc.exists()) {
+            const movieData = movieDoc.data();
+            // Update UI with movie data
+            document.querySelector('h1').textContent = movieData.title || movieTitle;
+            document.querySelector('img[alt="Movie Poster"]').src = movieData.poster || "https://m.media-amazon.com/images/M/MV5BMTY1NzY2ODAzMF5BMl5BanBnXkFtZTgwMzg1NzY2MTI@._V1_FMjpg_UX1000_.jpg";
+            player.poster = movieData.thumbnail || "https://m.media-amazon.com/images/M/MV5BMTY1NzY2ODAzMF5BMl5BanBnXkFtZTgwMzg1NzY2MTI@._V1_.jpg";
+            
+            // Set video source if available in database
+            if (movieData.videoUrl) {
+                player.src = movieData.videoUrl;
+            }
+        }
+    } catch (error) {
+        console.error("Error loading movie data:", error);
+        // Fallback to URL title if Firestore fails
+        document.querySelector('h1').textContent = movieTitle;
+    }
+}
+        
+        // Check if user has interacted with this movie before
+        async function checkUserInteraction() {
+            try {
+                const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    
+                    // Check watchlist
+                    if (userData.watchlist?.includes(movieId)) {
+                        addToListBtn.innerHTML = '<i class="fas fa-bookmark"></i><span>In Watchlist</span>';
+                        addToListBtn.classList.add('text-teal-400');
+                    }
+                    
+                    // Check likes
+                    if (userData.likes?.includes(movieId)) {
+                        likeBtn.innerHTML = '<i class="fas fa-thumbs-up"></i><span>Liked</span>';
+                        likeBtn.classList.add('text-teal-400');
+                    }
+                }
+            } catch (error) {
+                console.error("Error checking user interaction:", error);
+            }
+        }
+        
+        // Player Controls
+        playPauseBtn.addEventListener('click', togglePlayPause);
+        playOverlay.addEventListener('click', togglePlayPause);
+        
+        function togglePlayPause() {
+            if (player.paused) {
+                player.play();
+                isPlaying = true;
+                playPauseBtn.innerHTML = '<i class="fas fa-pause text-lg"></i>';
+                playOverlay.style.display = 'none';
+            } else {
+                player.pause();
+                isPlaying = false;
+                playPauseBtn.innerHTML = '<i class="fas fa-play text-lg"></i>';
+            }
+        }
+        
+        rewindBtn.addEventListener('click', () => {
+            player.currentTime -= 10;
+        });
+        
+        forwardBtn.addEventListener('click', () => {
+            player.currentTime += 10;
+        });
+        
+        muteBtn.addEventListener('click', toggleMute);
+        
+        function toggleMute() {
+            player.muted = !player.muted;
+            isMuted = player.muted;
+            if (isMuted) {
+                muteBtn.innerHTML = '<i class="fas fa-volume-mute text-lg"></i>';
+                volumeSlider.value = 0;
+            } else {
+                muteBtn.innerHTML = '<i class="fas fa-volume-up text-lg"></i>';
+                volumeSlider.value = player.volume;
+            }
+        }
+        
+        volumeSlider.addEventListener('input', () => {
+            player.volume = volumeSlider.value;
+            player.muted = false;
+            isMuted = false;
+            muteBtn.innerHTML = '<i class="fas fa-volume-up text-lg"></i>';
+            
+            if (volumeSlider.value == 0) {
+                muteBtn.innerHTML = '<i class="fas fa-volume-mute text-lg"></i>';
+                player.muted = true;
+                isMuted = true;
+            }
+        });
+        
+        player.addEventListener('timeupdate', updateProgress);
+        
+        function updateProgress() {
+            const percent = (player.currentTime / player.duration) * 100;
+            progressBar.style.width = `${percent}%`;
+            
+            currentTime.textContent = formatTime(player.currentTime);
+            duration.textContent = formatTime(player.duration);
+            timeDisplay.textContent = `${formatTime(player.currentTime)} / ${formatTime(player.duration)}`;
+        }
+        
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+        
+        progressBar.parentElement.addEventListener('click', (e) => {
+            const rect = e.target.getBoundingClientRect();
+            const pos = (e.clientX - rect.left) / rect.width;
+            player.currentTime = pos * player.duration;
+        });
+        
+        fullscreenBtn.addEventListener('click', toggleFullscreen);
+        
+        function toggleFullscreen() {
+            if (!isFullscreen) {
+                if (player.requestFullscreen) {
+                    player.requestFullscreen();
+                } else if (player.webkitRequestFullscreen) {
+                    player.webkitRequestFullscreen();
+                } else if (player.msRequestFullscreen) {
+                    player.msRequestFullscreen();
+                }
+                isFullscreen = true;
+                fullscreenBtn.innerHTML = '<i class="fas fa-compress text-lg"></i>';
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+                isFullscreen = false;
+                fullscreenBtn.innerHTML = '<i class="fas fa-expand text-lg"></i>';
+            }
+        }
+        
+        // Quality settings
+        qualityOptions.addEventListener('click', (e) => {
+            if (e.target.classList.contains('quality-option')) {
+                document.querySelectorAll('.quality-option').forEach(option => {
+                    option.classList.remove('selected');
+                });
+                e.target.classList.add('selected');
+                
+                // In a real app, you would change the video source based on quality
+                console.log(`Switched to ${e.target.dataset.quality} quality`);
+            }
+        });
+        
+        // Show/hide controls
+        player.addEventListener('mousemove', () => {
+            playerControls.style.opacity = '1';
+            clearTimeout(hideControlsTimeout);
+            hideControlsTimeout = setTimeout(() => {
+                if (isPlaying) {
+                    playerControls.style.opacity = '0';
+                }
+            }, 3000);
+        });
+        
+        player.addEventListener('mouseleave', () => {
+            if (isPlaying) {
+                playerControls.style.opacity = '0';
+            }
+        });
+        
+        // User interactions
+        addToListBtn.addEventListener('click', async () => {
+            if (!currentUser) return;
+            
+            try {
+                const userRef = doc(db, "users", currentUser.uid);
+                
+                if (addToListBtn.classList.contains('text-teal-400')) {
+                    // Remove from watchlist
+                    await updateDoc(userRef, {
+                        watchlist: arrayRemove(movieId)
+                    });
+                    addToListBtn.innerHTML = '<i class="far fa-bookmark"></i><span>Watchlist</span>';
+                    addToListBtn.classList.remove('text-teal-400');
+                } else {
+                    // Add to watchlist
+                    await updateDoc(userRef, {
+                        watchlist: arrayUnion(movieId)
+                    });
+                    addToListBtn.innerHTML = '<i class="fas fa-bookmark"></i><span>In Watchlist</span>';
+                    addToListBtn.classList.add('text-teal-400');
+                }
+            } catch (error) {
+                console.error("Error updating watchlist:", error);
+            }
+        });
+        
+        likeBtn.addEventListener('click', async () => {
+            if (!currentUser) return;
+            
+            try {
+                const userRef = doc(db, "users", currentUser.uid);
+                const movieRef = doc(db, "movies", movieId);
+                
+                if (likeBtn.classList.contains('text-teal-400')) {
+                    // Remove like
+                    await updateDoc(userRef, {
+                        likes: arrayRemove(movieId)
+                    });
+                    await updateDoc(movieRef, {
+                        likes: arrayRemove(currentUser.uid)
+                    });
+                    likeBtn.innerHTML = '<i class="far fa-thumbs-up"></i><span>Like</span>';
+                    likeBtn.classList.remove('text-teal-400');
+                } else {
+                    // Add like
+                    await updateDoc(userRef, {
+                        likes: arrayUnion(movieId)
+                    });
+                    await updateDoc(movieRef, {
+                        likes: arrayUnion(currentUser.uid)
+                    });
+                    likeBtn.innerHTML = '<i class="fas fa-thumbs-up"></i><span>Liked</span>';
+                    likeBtn.classList.add('text-teal-400');
+                }
+            } catch (error) {
+                console.error("Error updating likes:", error);
+            }
+        });
+        
+        shareBtn.addEventListener('click', () => {
+    const shareUrl = `${window.location.origin}${window.location.pathname}?movie=${movieId}&title=${encodeURIComponent(document.querySelector('h1').textContent)}`;
+    
+    if (navigator.share) {
+        navigator.share({
+            title: 'Check out this movie on CinemaAL',
+            text: `I'm watching "${document.querySelector('h1').textContent}" on CinemaAL`,
+            url: shareUrl
+        }).catch(err => {
+            console.log('Error sharing:', err);
+            copyToClipboard(shareUrl);
+        });
+    } else {
+        copyToClipboard(shareUrl);
+    }
+});
+        
+        function copyToClipboard(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            
+            alert('Link copied to clipboard!');
+        }
+        
+        // Initialize player volume
+        player.volume = 0.5;
+        volumeSlider.value = 0.5;
+        
+        // Event listeners for movie cards
+        document.querySelectorAll('.group.relative').forEach(card => {
+            card.addEventListener('click', (e) => {
+                if (!e.target.closest('button')) {
+                    // In a real app, this would navigate to the movie page
+                    console.log('Navigating to movie:', card.querySelector('h3').textContent);
+                }
+            });
+        });
+    </script>
+      <script src="js/script.js"></script>
+</body>
+</html>

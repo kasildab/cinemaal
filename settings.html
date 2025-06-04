@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings | Cinema AL</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="icon" href="https://cdn.iconscout.com/icon/premium/png-256-thumb/profile-setting-2021003-1701932.png" />
+  <script src="firebase-messaging-sw.js"></script>
+  <style>
+    .toggle-checkbox:checked {
+      right: 0;
+      border-color: #34d399;
+    }
+    .toggle-checkbox:checked + .toggle-label {
+      background-color: #34d399;
+      background-color: #34d399;
+    }
+    .theme-option {
+      transition: all 0.3s ease;
+    }
+    .theme-option.selected {
+      border-color: #34d399;
+      box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.5);
+    }
+    .color-option {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .color-option:hover {
+      transform: scale(1.1);
+    }
+    .color-option.selected {
+      transform: scale(1.1);
+      box-shadow: 0 0 0 2px white, 0 0 0 4px currentColor;
+    }
+  </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+  <!-- Navigation -->
+  <nav class="flex items-center justify-between px-6 py-4 bg-[#1a1823]/90 backdrop-blur-md sticky top-0 z-50 border-b border-[#2a2833]">
+    <div class="flex items-center gap-8">
+      <div class="text-3xl font-bold">
+        <a href="home2.html" class="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-pink-500">CinemaAL</a>
+      </div>
+    </div>
+    <div class="flex items-center gap-6">
+      <a href="home2.html" class="p-2 rounded-full hover:bg-[#2a2833] transition-colors" title="Back to Home">
+        <i class="fas fa-arrow-left"></i>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="container mx-auto px-6 py-12 max-w-4xl">
+    <div class="flex flex-col md:flex-row gap-8">
+      <!-- Sidebar -->
+      <div class="w-full md:w-64 flex-shrink-0">
+        <h2 class="text-2xl font-bold mb-6">Settings</h2>
+        <ul class="space-y-2">
+          <li>
+            <a href="#account" class="block px-4 py-2 rounded-lg bg-[#2a2833] text-teal-400 font-medium">
+              <i class="fas fa-user mr-2"></i> Account
+            </a>
+          </li>
+          <li>
+            <a href="#notifications" class="block px-4 py-2 rounded-lg hover:bg-[#2a2833] transition-colors">
+              <i class="fas fa-bell mr-2"></i> Notifications
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Settings Panels -->
+      <div class="flex-grow">
+        <!-- Account Settings -->
+        <section id="account" class="bg-[#1a1823] rounded-xl p-6 mb-8">
+          <h3 class="text-xl font-bold mb-6 flex items-center">
+            <i class="fas fa-user mr-2 text-teal-400"></i> Account Settings
+          </h3>
+          
+          <div class="space-y-6">
+            <div class="flex flex-col md:flex-row items-center gap-6">
+                <div class="relative">
+                  <img id="profileImage" src="https://via.placeholder.com/150" alt="Profile" class="w-24 h-24 rounded-full border-2 border-teal-400">
+                </div>
+                <div class="flex-grow">
+                  <h4 class="font-bold">Profile Image URL</h4>
+                  <input type="url" id="profileImageUrl" placeholder="Enter image URL" 
+                    class="w-full px-4 py-2 rounded-lg bg-[#2a2833] border border-[#3a3843] focus:outline-none focus:ring-2 focus:ring-teal-400 mt-2">
+                  <p class="text-sm text-gray-400">Enter a direct image URL (e.g., from Imgur)</p>
+                </div>
+              </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label for="username" class="block text-sm font-medium mb-2">Username</label>
+                <input type="text" id="username" class="w-full px-4 py-2 rounded-lg bg-[#2a2833] border border-[#3a3843] focus:outline-none focus:ring-2 focus:ring-teal-400">
+              </div>
+              <div>
+                <label for="email" class="block text-sm font-medium mb-2">Email</label>
+                <input type="email" id="email" class="w-full px-4 py-2 rounded-lg bg-[#2a2833] border border-[#3a3843] focus:outline-none focus:ring-2 focus:ring-teal-400" disabled>
+              </div>
+            </div>
+
+            <div>
+              <label for="bio" class="block text-sm font-medium mb-2">About Me</label>
+              <textarea id="bio" rows="3" class="w-full px-4 py-2 rounded-lg bg-[#2a2833] border border-[#3a3843] focus:outline-none focus:ring-2 focus:ring-teal-400"></textarea>
+            </div>
+
+            <div class="flex justify-end">
+              <button id="saveAccountBtn" class="bg-teal-400 hover:bg-teal-500 text-black font-medium px-6 py-2 rounded-lg transition-colors">
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </section>
+        <!-- Notification Settings -->
+        <section id="notifications" class="bg-[#1a1823] rounded-xl p-6 mb-8">
+          <h3 class="text-xl font-bold mb-6 flex items-center">
+            <i class="fas fa-bell mr-2 text-teal-400"></i> Notification Settings
+          </h3>
+          
+          <div class="space-y-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="font-medium">Email Notifications</h4>
+                <p class="text-sm text-gray-400">Receive notifications via email</p>
+              </div>
+              <div class="relative inline-block w-12 mr-2 align-middle select-none">
+                <label for="emailNotifications" class="sr-only">Email Notifications</label>
+                <input type="checkbox" id="emailNotifications" title="Enable or disable email notifications" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
+                <label for="emailNotifications" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-600 cursor-pointer"></label>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="font-medium">Push Notifications</h4>
+                <p class="text-sm text-gray-400">Receive push notifications on your device</p>
+              </div>
+              <div class="relative inline-block w-12 mr-2 align-middle select-none">
+                <label for="pushNotifications" class="sr-only">Enable or disable push notifications</label>
+                <input type="checkbox" id="pushNotifications" title="Enable or disable push notifications" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
+                <label for="pushNotifications" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-600 cursor-pointer"></label>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="font-medium">New Releases</h4>
+                <p class="text-sm text-gray-400">Get notified about new movie releases</p>
+              </div>
+              <div class="relative inline-block w-12 mr-2 align-middle select-none">
+                <label for="newReleases" class="sr-only">Enable notifications for new releases</label>
+                <input type="checkbox" id="newReleases" title="Enable notifications for new releases" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
+                <label for="newReleases" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-600 cursor-pointer"></label>
+              </div>
+            </div>
+
+            <div class="pt-6">
+              <button id="saveNotificationBtn" class="bg-teal-400 hover:bg-teal-500 text-black font-medium px-6 py-2 rounded-lg transition-colors">
+                Save Notification Settings
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Danger Zone -->
+        <section class="bg-[#1a1823] rounded-xl p-6 border border-red-500/30">
+          <h3 class="text-xl font-bold mb-6 flex items-center text-red-400">
+            <i class="fas fa-exclamation-triangle mr-2"></i> Danger Zone
+          </h3>
+          
+          <div class="space-y-4">
+            <div>
+              <h4 class="font-medium">Delete Account</h4>
+              <p class="text-sm text-gray-400 mb-3">Permanently delete your account and all associated data</p>
+              <button id="deleteAccountBtn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm transition-colors">
+                Delete Account
+              </button>
+            </div>
+
+            <div>
+              <h4 class="font-medium">Export Data</h4>
+              <p class="text-sm text-gray-400 mb-3">Download all your data in a ZIP file</p>
+              <button id="exportDataBtn" class="bg-[#2a2833] hover:bg-[#3a3843] text-white px-4 py-2 rounded-lg text-sm transition-colors">
+                Export Data
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="confirmDeleteModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-gray-800 p-8 rounded-lg w-full max-w-md text-center">
+      <h2 class="text-2xl font-bold mb-4">Confirm Account Deletion</h2>
+      <p class="text-gray-300 mb-6">Are you sure you want to delete your account? This cannot be undone.</p>
+      <div class="flex space-x-4 justify-center">
+        <button id="confirmDeleteBtn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md">Confirm Delete</button>
+        <button id="cancelDeleteBtn" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase & Logic -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import { getMessaging, getToken, onMessage, isSupported } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-messaging.js";
+    import { 
+      getAuth, 
+      onAuthStateChanged, 
+      deleteUser
+    } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+    import { 
+      getFirestore, 
+      doc, 
+      getDoc, 
+      setDoc,
+      deleteDoc
+    } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+    import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-functions.js";
+  
+    const firebaseConfig = {
+      apiKey: "AIzaSyCjZv1YDGIb3DCXWQO231OfPMJTNKrjzKo",
+      authDomain: "cinema-al.firebaseapp.com",
+      projectId: "cinema-al",
+      storageBucket: "cinema-al.appspot.com",
+      messagingSenderId: "1032816680533",
+      appId: "1:1032816680533:web:8276b33e95570691d93edc",
+    };
+  
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const functions = getFunctions(app);
+    
+    let messaging;
+    if (await isSupported()) {
+      messaging = getMessaging(app);
+    }
+  
+    const vapidKey = "BNP9AG_8KKPb9vSXoPJF7cZmgN2puvg5RcYw1QYvb7XgW-4m3uQtaT41ZgeowCCESbu-SSzZ8QkrVc-yCBGur6I";
+  
+    // DOM Elements
+    const elements = {
+      profileImage: document.getElementById('profileImage'),
+      profileImageUrl: document.getElementById('profileImageUrl'),
+      username: document.getElementById('username'),
+      email: document.getElementById('email'),
+      bio: document.getElementById('bio'),
+      saveAccountBtn: document.getElementById('saveAccountBtn'),
+      emailNotifications: document.getElementById('emailNotifications'),
+      pushNotifications: document.getElementById('pushNotifications'),
+      newReleases: document.getElementById('newReleases'),
+      saveNotificationBtn: document.getElementById('saveNotificationBtn'),
+      deleteAccountBtn: document.getElementById('deleteAccountBtn'),
+      exportDataBtn: document.getElementById('exportDataBtn'),
+      confirmDeleteModal: document.getElementById('confirmDeleteModal'),
+      confirmDeleteBtn: document.getElementById('confirmDeleteBtn'),
+      cancelDeleteBtn: document.getElementById('cancelDeleteBtn')
+    };
+  
+    let currentUser = null;
+    let userData = {};
+  
+    // Initialize the page
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists()) {
+          userData = userDoc.data();
+          
+          // Update account settings
+          elements.profileImage.src = userData.profileImage || "https://via.placeholder.com/150";
+          elements.profileImageUrl.value = userData.profileImage || "";
+          elements.username.value = userData.username || user.email.split('@')[0];
+          elements.email.value = user.email;
+          elements.bio.value = userData.bio || "";
+          
+          // Update notification settings
+          if (userData.notifications) {
+            elements.emailNotifications.checked = userData.notifications.email || false;
+            elements.pushNotifications.checked = userData.notifications.push || false;
+            elements.newReleases.checked = userData.notifications.newReleases || false;
+            updateToggleUI(elements.emailNotifications);
+            updateToggleUI(elements.pushNotifications);
+            updateToggleUI(elements.newReleases);
+          }
+  
+          // Register service worker if push notifications are enabled
+          if (userData.notifications?.push && 'serviceWorker' in navigator) {
+            try {
+              await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+            } catch (error) {
+              console.error('Service worker registration failed:', error);
+            }
+          }
+        }
+      } else {
+        window.location.href = "login.html";
+      }
+    });
+  
+    // Save Account Settings
+    elements.saveAccountBtn.addEventListener('click', async () => {
+      const username = elements.username.value.trim();
+      const bio = elements.bio.value.trim();
+      const imageUrl = elements.profileImageUrl.value.trim();
+      
+      if (!username) {
+        showToast("Username cannot be empty", true);
+        return;
+      }
+      
+      try {
+        await setDoc(doc(db, "users", currentUser.uid), {
+          username: username,
+          bio: bio,
+          profileImage: imageUrl || "https://via.placeholder.com/150",
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
+        
+        elements.profileImage.src = imageUrl || "https://via.placeholder.com/150";
+        showToast('Profile updated successfully!');
+        
+        // Send account update notification
+        await handleNotification('accountUpdate', {});
+      } catch (error) {
+        console.error("Error saving profile:", error);
+        showToast("Failed to update profile.", true);
+      }
+    });
+  
+    // Notification Functions
+    async function requestNotificationPermission() {
+      try {
+        if (!('Notification' in window)) {
+          showToast('This browser does not support notifications', true);
+          return null;
+        }
+  
+        const permission = await Notification.requestPermission();
+        if (permission === "granted") {
+          if (!messaging) {
+            showToast('Messaging not supported', true);
+            return null;
+          }
+          
+          try {
+            const registration = await navigator.serviceWorker.ready;
+            const token = await getToken(messaging, { 
+              vapidKey: vapidKey,
+              serviceWorkerRegistration: registration
+            });
+            
+            if (!token) {
+              showToast('Failed to get notification token', true);
+              return null;
+            }
+            
+            await saveFCMToken(token);
+            return token;
+          } catch (error) {
+            console.error('Error getting token:', error);
+            showToast('Error setting up notifications', true);
+            return null;
+          }
+        }
+        return null;
+      } catch (error) {
+        console.error("Error requesting permission:", error);
+        return null;
+      }
+    }
+  
+    async function saveFCMToken(token) {
+      await setDoc(doc(db, "users", currentUser.uid), {
+        fcmToken: token,
+        updatedAt: new Date().toISOString()
+      }, { merge: true });
+    }
+    async function sendNotificationEmail(subject, message, username = "User") {
+  try {
+    await emailjs.send("service_uzb67uq", "template_y8tmqq8", {
+      to_email: currentUser.email,
+      subject: subject,
+      message: message,
+      username: username
+    });
+    return true;
+  } catch (error) {
+    console.error("EmailJS failed:", error);
+    return false;
+  }
+}
+
+
+await sendNotificationEmail(
+  "New Release Available!",
+  `Good news! The movie "${payload.movieTitle}" is now available to watch.`,
+  elements.username.value
+);
+
+
+  
+    async function handleNotification(type, payload) {
+      const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+      const userData = userDoc.data();
+      
+      if (!userData.notifications) return;
+      
+      // Email notifications
+      if (userData.notifications.email) {
+        let subject = '';
+        let message = '';
+        
+        switch(type) {
+          case 'newRelease':
+            if (userData.notifications.newReleases) {
+              subject = `New Release: ${payload.movieTitle}`;
+              message = `The movie "${payload.movieTitle}" you were waiting for is now available!`;
+            }
+            break;
+          case 'accountUpdate':
+            subject = 'Your account has been updated';
+            message = 'Your CinemaAL account settings have been successfully updated.';
+            break;
+        }
+        
+        if (subject && message) {
+          await sendNotificationEmail(subject, message);
+        }
+      }
+    }
+  
+    // Save Notification Settings
+    elements.saveNotificationBtn.addEventListener('click', async () => {
+      try {
+        const settings = {
+          email: elements.emailNotifications.checked,
+          push: elements.pushNotifications.checked,
+          newReleases: elements.newReleases.checked
+        };
+  
+        // Request permission if enabling push notifications
+        if (settings.push) {
+          const token = await requestNotificationPermission();
+          if (!token) {
+            showToast('Push notifications permission denied', true);
+            elements.pushNotifications.checked = false;
+            updateToggleUI(elements.pushNotifications);
+            settings.push = false;
+          }
+        }
+  
+        // Save to Firestore
+        await setDoc(doc(db, "users", currentUser.uid), {
+          notifications: settings,
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
+  
+        // Send confirmation email if email notifications were enabled
+        if (settings.email) {
+          const emailSent = await sendNotificationEmail(
+            'Notification Settings Updated',
+            'You have successfully enabled email notifications for your CinemaAL account.'
+          );
+          if (!emailSent) {
+            showToast('Email notification confirmation failed', true);
+          }
+        }
+  
+        showToast('Notification settings saved!');
+      } catch (error) {
+        console.error("Error saving notification settings:", error);
+        showToast('Failed to save settings', true);
+      }
+    });
+  
+    // Handle incoming push messages
+    if (messaging) {
+      onMessage(messaging, (payload) => {
+        console.log("Received message:", payload);
+        showNotification(
+          payload.notification?.title || "New Update",
+          payload.notification?.body || "You have a new notification"
+        );
+      });
+    }
+  
+   // Delete Account
+   elements.deleteAccountBtn.addEventListener('click', () => {
+      elements.confirmDeleteModal.classList.remove('hidden');
+    });
+    
+    elements.cancelDeleteBtn.addEventListener('click', () => {
+      elements.confirmDeleteModal.classList.add('hidden');
+    });
+    
+    elements.confirmDeleteBtn.addEventListener('click', async () => {
+      try {
+        // Delete user data from Firestore
+        await deleteDoc(doc(db, "users", currentUser.uid));
+        
+        // Delete user account
+        await deleteUser(currentUser);
+        
+        alert("Account deleted successfully. You will be redirected to the signup page.");
+        window.location.href = "signup.html";
+      } catch (error) {
+        console.error("Error deleting account:", error);
+        alert("Failed to delete account. Please try again.");
+        elements.confirmDeleteModal.classList.add('hidden');
+      }
+    });
+  
+elements.exportDataBtn.addEventListener('click', async () => {
+  try {
+    const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+
+    if (!userDoc.exists()) {
+      showToast("No data found for export.", true);
+      return;
+    }
+
+    const userData = userDoc.data();
+    const exportJson = JSON.stringify(userData, null, 2);
+    const blob = new Blob([exportJson], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "cinema_al_user_data.json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    showToast("Your data has been exported.");
+  } catch (error) {
+    console.error("Error exporting user data:", error);
+    showToast("Failed to export data. Please try again.", true);
+  }
+});
+   
+  
+    // UI Helper Functions
+    function updateToggleUI(checkbox) {
+      const label = checkbox.nextElementSibling;
+      if(checkbox.checked) {
+        label.classList.add('bg-teal-400');
+        label.classList.remove('bg-gray-600');
+      } else {
+        label.classList.remove('bg-teal-400');
+        label.classList.add('bg-gray-600');
+      }
+    }
+  
+    function showNotification(title, body) {
+      if ("Notification" in window && Notification.permission === "granted") {
+        new Notification(title, { body, icon: "/icons/icon-192x192.png" });
+      }
+    }
+  
+    function showToast(message, isError = false) {
+      const toast = document.createElement('div');
+      toast.className = `fixed bottom-4 right-4 px-4 py-2 rounded-md shadow-lg ${
+        isError ? 'bg-red-500' : 'bg-green-500'
+      } text-white`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+  
+    // Initialize toggles
+    document.querySelectorAll('.toggle-checkbox').forEach(checkbox => {
+      checkbox.addEventListener('change', function() {
+        updateToggleUI(this);
+      });
+      updateToggleUI(checkbox);
+    });
+
+    await sendNotificationEmail(
+  "Welcome to Cinema AL",
+  "Thank you for updating your settings!"
+);
+
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <script>
+    emailjs.init("r3qzNip_cPD74Xsi6"); // Public Key
+  </script>
+    <script src="js/script.js"></script>
+</body>
+</html>
